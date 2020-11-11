@@ -68,29 +68,6 @@ const json = {
   },
   "name": "HACKED",
   "preview_locked": false,
-  "quick_transitions": [
-    {
-      "duration": 300,
-      "fade_to_black": false,
-      "hotkeys": [],
-      "id": 1,
-      "name": "Cut"
-    },
-    {
-      "duration": 300,
-      "fade_to_black": false,
-      "hotkeys": [],
-      "id": 2,
-      "name": "Fade"
-    },
-    {
-      "duration": 300,
-      "fade_to_black": true,
-      "hotkeys": [],
-      "id": 3,
-      "name": "Fade"
-    }
-  ],
   "saved_projectors": [],
   "scaling_enabled": false,
   "scaling_level": 0,
@@ -108,15 +85,12 @@ const json = {
       "deinterlace_mode": 0,
       "enabled": true,
       "flags": 0,
-      "hotkeys": {
-        "OBSBasic.SelectScene": []
-      },
       "id": "scene",
       "mixers": 0,
       "monitoring_type": 0,
       "muted": false,
       "name": "Presentation",
-      "prev_ver": 436207616,
+      "prev_ver": 436207618,
       "private_settings": {},
       "push-to-mute": false,
       "push-to-mute-delay": 0,
@@ -124,7 +98,7 @@ const json = {
       "push-to-talk-delay": 0,
       "settings": {
         "custom_size": false,
-        "id_counter": 10,
+        "id_counter": 86,
         "items": []
       },
       "sync": 0,
@@ -989,20 +963,20 @@ if (!fs.existsSync('filelist.txt')) {
 
   let output = '';
   dirlist.forEach(file => output = output + file + '\n');
-  fs.writeFileSync('filelist.txt', output, { encoding: 'utf-8', flag: 'w' });
+  fs.writeFileSync('./filelist.txt', output, { encoding: 'utf-8', flag: 'w' });
   console.log('filelist.txt written!');
   process.exit();
 
 }
 
 //  if filelist exists
-let filelist = fs.readFileSync('filelist.txt', { encoding: 'utf-8', flag: 'r' });
+let filelist = fs.readFileSync('./filelist.txt', { encoding: 'utf-8', flag: 'r' });
 const date = new Date();
 json.name = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-const scene = json.sources[0];
-let idCounter = scene.settings.id_counter;
-const sources = [];
+const settings = json.sources[0].settings.items;
+const sources = json.sources;
+let idCounter = json.sources[0].settings.id_counter;
 
 filelist.split('\n').reverse().forEach(filename => {
 
@@ -1012,7 +986,7 @@ filelist.split('\n').reverse().forEach(filename => {
 
   //  if image
   if (images.includes(ext)) {
-    sources.push({
+    sources.unshift({
       "balance": 0.5,
       "deinterlace_field_order": 0,
       "deinterlace_mode": 0,
@@ -1031,7 +1005,7 @@ filelist.split('\n').reverse().forEach(filename => {
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "file": path.resolve(path.join(__dirname, filename))
+        "file": path.resolve(path.join(__dirname, filename)),
       },
       "sync": 0,
       "versioned_id": "image_source",
@@ -1041,7 +1015,7 @@ filelist.split('\n').reverse().forEach(filename => {
 
   //  if video
   if (videos.includes(ext)) {
-    sources.push({
+    sources.unshift({
       "balance": 0.5,
       "deinterlace_field_order": 0,
       "deinterlace_mode": 0,
@@ -1060,7 +1034,7 @@ filelist.split('\n').reverse().forEach(filename => {
       "id": "ffmpeg_source",
       "mixers": 255,
       "monitoring_type": 0,
-      "muted": false,
+      "muted": true,
       "name": itemName,
       "prev_ver": 436207616,
       "private_settings": {},
@@ -1071,7 +1045,7 @@ filelist.split('\n').reverse().forEach(filename => {
       "settings": {
         "hw_decode": true,
         "local_file": path.resolve(path.join(__dirname, filename)),
-        "restart_on_activate": true
+        "restart_on_activate": true,
       },
       "sync": 0,
       "versioned_id": "ffmpeg_source",
@@ -1079,47 +1053,46 @@ filelist.split('\n').reverse().forEach(filename => {
     });
   }
 
-  scene.settings.items.push({
-    "align": 5,
-    "bounds": {
-      "x": 1280.0,
-      "y": 720.0
-    },
-    "bounds_align": 0,
-    "bounds_type": 2,
-    "crop_bottom": 0,
-    "crop_left": 0,
-    "crop_right": 0,
-    "crop_top": 0,
-    "group_item_backup": false,
-    "id": idCounter,
-    "locked": true,
-    "name": itemName,
-    "pos": {
-      "x": 0.0,
-      "y": 0.0
-    },
-    "private_settings": {},
-    "rot": 0.0,
-    "scale": {
-      "x": 1.0,
-      "y": 1.0
-    },
-    "scale_filter": "disable",
-    "visible": false
-  });
+  //  settings & size
+  settings.push(
+    {
+      "align": 5,
+      "bounds": {
+        "x": 1920.0,
+        "y": 1080.0
+      },
+      "bounds_align": 0,
+      "bounds_type": 2,
+      "crop_bottom": 0,
+      "crop_left": 0,
+      "crop_right": 0,
+      "crop_top": 0,
+      "group_item_backup": false,
+      "id": idCounter,
+      "locked": true,
+      "name": itemName,
+      "pos": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "private_settings": {},
+      "rot": 0.0,
+      "scale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "scale_filter": "disable",
+      "visible": false
+    }
+  )
 
-  //  if video
-  if (videos.includes(ext)) {
-  }
 
   idCounter++;
 
 });
 
-scene.settings.id_counter = idCounter;
-sources.push(scene);
-json.sources = sources;
+json.sources[0].settings.id_counter = idCounter;
 
-fs.writeFileSync('vlog.json', JSON.stringify(json, null, 2), { encoding: 'utf-8', flag: 'w' });
+console.log('doing thing!');
+fs.writeFileSync('./vlog.json', JSON.stringify(json, null, 2), { encoding: 'utf-8', flag: 'w' });
 console.log('vlog.json written! Have fun...')
